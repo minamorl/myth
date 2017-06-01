@@ -9,7 +9,7 @@ impl<T> Vector<T>
     where T: num::Signed + Clone + Copy, i32: Into<T> {
     pub fn new(v: Vec<T>) -> Self {
         let dim = v.len();
-        Vector {
+        Self {
             v: v,
             dim: dim,
         }
