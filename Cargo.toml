@@ -1,0 +1,7 @@
+[package]
+name = "myth"
+version = "0.1.0"
+authors = ["minamorl <minamorl@users.noreply.github.com>"]
+
+[dependencies]
+num = "0.1"
