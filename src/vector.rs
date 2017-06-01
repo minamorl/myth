@@ -69,10 +69,10 @@ mod tests {
 
     #[test]
     fn test_vector_dot() {
-        let v1 = Vector::new(vec![1, 2, 3]);
-        let v2 = Vector::new(vec![1, 2, 3]);
+        let v1 = Vector::new(vec![1.0, 2.0, 3.0]);
+        let v2 = Vector::new(vec![1.0, 2.0, 3.0]);
         let r = v1.dot(&v2).unwrap();
-        assert_eq!(r, 14);
+        assert_eq!(r, 14.0);
     }
 
     #[test]
