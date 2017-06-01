@@ -27,6 +27,13 @@ impl<T> Matrix<T>
 
         }).collect()))
     }
+    pub fn transpose(&self) -> Self {
+        Self::new((0..self.size.1).map(|j| {
+            (0..self.size.0).map(|i| {
+                self.v[i][j]
+            }).collect()
+        }).collect())
+    }
 }
 
 #[cfg(test)]
@@ -57,6 +64,20 @@ mod tests {
         assert_eq!(v3.v, vec![
             vec![2, 4, 6],
             vec![2, 4, 6],
+        ]);
+    }
+    #[test]
+    fn test_matrix_transpose() {
+        let v1 = Matrix::new(
+            vec![
+                vec![1, 2, 3],
+                vec![1, 2, 3],
+            ]);
+        let v3 = v1.transpose();
+        assert_eq!(v3.v, vec![
+            vec![1, 1],
+            vec![2, 2],
+            vec![3, 3]
         ]);
     }
 }
