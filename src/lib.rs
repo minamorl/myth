@@ -19,11 +19,7 @@ impl<T> Vector<T>
         if self.dim != vec.dim {
             panic!("Vec size is wrong");
         }
-        let mut r = vec![];
-        for i in 0..self.dim {
-            r.push(self.v[i] + vec.v[i]);
-        }
-        Vector::new(r)
+        Vector::new((0..self.dim).map(|i| self.v[i] + vec.v[i]).collect())
     }
     fn inverse(&self) -> Self {
         let minus: T = -1i32.into();
