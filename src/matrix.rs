@@ -15,16 +15,23 @@ impl<T> Matrix<T>
             size: size,
         }
     }
-    pub fn add(&self, vec: &Self) -> Self {
+    pub fn add(&self, vec: &Self) -> Result<Self, &str> {
         if self.size != vec.size {
-            panic!("Matrix size is wrong");
+            return Err("Matrix size is wrong");
         }
-        Self::new((0..self.size.0).map(|i| {
+        Ok(Self::new((0..self.size.0).map(|i| {
             
             (0..self.size.1).map(|j| {
                 self.v[i][j] + vec.v[i][j]
             }).collect()
 
+        }).collect()))
+    }
+    pub fn transpose(&self) -> Self {
+        Self::new((0..self.size.1).map(|j| {
+            (0..self.size.0).map(|i| {
+                self.v[i][j]
+            }).collect()
         }).collect())
     }
 }
@@ -53,10 +60,24 @@ mod tests {
                 vec![1, 2, 3],
                 vec![1, 2, 3],
             ]);
-        let v3 = v1.add(&v2);
+        let v3 = v1.add(&v2).unwrap();
         assert_eq!(v3.v, vec![
             vec![2, 4, 6],
             vec![2, 4, 6],
+        ]);
+    }
+    #[test]
+    fn test_matrix_transpose() {
+        let v1 = Matrix::new(
+            vec![
+                vec![1, 2, 3],
+                vec![1, 2, 3],
+            ]);
+        let v3 = v1.transpose();
+        assert_eq!(v3.v, vec![
+            vec![1, 1],
+            vec![2, 2],
+            vec![3, 3]
         ]);
     }
 }
