@@ -1,4 +1,5 @@
 extern crate num;
+use std::iter::Sum;
 
 #[derive(Debug)]
 pub struct Matrix<T> {
@@ -7,7 +8,7 @@ pub struct Matrix<T> {
 }
 
 impl<T> Matrix<T> 
-    where T: num::Signed + Clone + Copy, i32: Into<T> {
+    where T: num::Signed + Clone + Copy + Sum, i32: Into<T> {
     pub fn new(v: Vec<Vec<T>>) -> Self {
         let size = (v.len(), v[0].len());
         Self {
@@ -33,6 +34,22 @@ impl<T> Matrix<T>
                 self.v[i][j]
             }).collect()
         }).collect())
+    }
+    pub fn isSquare(&self) -> bool {
+        self.size.0 == self.size.1
+    }
+    pub fn mul(&self, vec: &Self) -> Result<Self, &str> {
+        if self.size.1 != vec.size.0 {
+            Err("Wrong size")
+        } else { 
+            Ok(Self::new(
+                (0..self.size.0).map(|i| {
+                    (0..vec.size.1).map(|j| {
+                        (0..vec.size.0).map(|k| self.v[i][k] * vec.v[k][j]).sum::<T>()
+                    }).collect()
+                }).collect()
+            ))
+        }
     }
 }
 
@@ -78,6 +95,19 @@ mod tests {
             vec![1, 1],
             vec![2, 2],
             vec![3, 3]
+        ]);
+    }
+    #[test]
+    fn test_matrix_mul() {
+        let v1 = Matrix::new(
+            vec![
+                vec![1, 2, 3],
+                vec![4, 5, 6],
+            ]);
+        let v2 = v1.transpose();
+        assert_eq!(v1.mul(&v2).unwrap().v, vec![
+            vec![14, 32],
+            vec![32, 77],
         ]);
     }
 }
