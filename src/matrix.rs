@@ -16,6 +16,19 @@ impl<T> Matrix<T>
             size: size,
         }
     }
+    pub fn diag(v: Vec<T>) -> Self {
+        Self::new(
+            (0..v.len()).map(|i| {
+                (0..v.len()).map(|j| {
+                    if i == j {
+                        v[i]
+                    } else {
+                        0.into()
+                    }
+                }).collect()
+            }).collect()
+        )
+    }
     pub fn add(&self, vec: &Self) -> Result<Self, &str> {
         if self.size != vec.size {
             return Err("Matrix size is wrong");
@@ -109,5 +122,15 @@ mod tests {
             vec![14, 32],
             vec![32, 77],
         ]);
+    }
+    #[test]
+    fn test_matrix_diag() {
+        let v1 = 
+            vec![
+                vec![1, 0, 0],
+                vec![0, 1, 0],
+                vec![0, 0, 1],
+            ];
+        assert_eq!(Matrix::diag(vec![1; 3]).v, v1);
     }
 }
