@@ -1,5 +1,6 @@
 extern crate num;
-use std::iter::Sum;
+use std::iter::{Sum};
+use std::ops::Mul;
 
 #[derive(Debug)]
 pub struct Matrix<T> {
@@ -8,7 +9,7 @@ pub struct Matrix<T> {
 }
 
 impl<T> Matrix<T> 
-    where T: num::Signed + Clone + Copy + Sum, i32: Into<T> {
+    where T: num::Signed + Clone + Copy + Sum + Mul, i32: Into<T> {
     pub fn new(v: Vec<Vec<T>>) -> Self {
         let size = (v.len(), v[0].len());
         Self {
@@ -63,6 +64,13 @@ impl<T> Matrix<T>
                 }).collect()
             ))
         }
+    }
+    pub fn scalar<U: Into<T> + Copy + Clone>(&self, n: U) -> Self {
+        Self::new(
+            self.v.clone().iter().map(|l| {
+                l.iter().map(|x| (*x) * n.into()).collect()
+            }).collect()
+        )
     }
 }
 
@@ -132,5 +140,15 @@ mod tests {
                 vec![0, 0, 1],
             ];
         assert_eq!(Matrix::diag(vec![1; 3]).v, v1);
+    }
+    #[test]
+    fn test_matrix_scalar() {
+        let v1 = 
+            vec![
+                vec![1, 0, 0],
+                vec![0, 1, 0],
+                vec![0, 0, 1],
+            ];
+        assert_eq!(Matrix::diag(vec![1; 3]).scalar(2).v, Matrix::diag(vec![2; 3]).v);
     }
 }
