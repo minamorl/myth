@@ -143,12 +143,6 @@ mod tests {
     }
     #[test]
     fn test_matrix_scalar() {
-        let v1 = 
-            vec![
-                vec![1, 0, 0],
-                vec![0, 1, 0],
-                vec![0, 0, 1],
-            ];
         assert_eq!(Matrix::diag(vec![1; 3]).scalar(2).v, Matrix::diag(vec![2; 3]).v);
     }
 }
