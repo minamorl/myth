@@ -92,7 +92,7 @@ impl<T> Matrix<T>
 
     }
     /// Provides a result from LU decomposition
-    pub fn decompose(&self) -> (Self, Self){
+    pub fn decompose(&self) -> (Self, Self, Self){
         let mut L = Matrix::diag(vec![1.into(); self.size.0]);
         let mut U = Matrix::zeroes(self.size.0, self.size.0);
         let P = self.pivot();
@@ -106,6 +106,24 @@ impl<T> Matrix<T>
             }
         }
         (P, L, U)
+    }
+
+    /// Determinant from PLU
+    pub fn determinant(&self) -> T {
+        let (P, L, U) = self.decompose();
+        let mut psum: T = 0.into();
+        let mut lsum: T = 0.into();
+        let mut usum: T = 0.into();
+        for i in 0..self.size.0 {
+            for j in 0..self.size.0 {
+                if i == j {
+                    psum = psum * P.v[i][j];
+                    lsum = lsum * L.v[i][j];
+                    usum = usum * U.v[i][j];
+                }
+            }
+        }
+        psum * lsum * usum
     }
 }
 
