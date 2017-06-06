@@ -92,7 +92,7 @@ impl<T> Matrix<T>
 
     }
     /// Provides a result from LU decomposition
-    pub fn decompose(&self) -> (Self, Self){
+    pub fn decompose(&self) -> (Self, Self, Self){
         let mut L = Matrix::diag(vec![1.into(); self.size.0]);
         let mut U = Matrix::zeroes(self.size.0, self.size.0);
         let P = self.pivot();
