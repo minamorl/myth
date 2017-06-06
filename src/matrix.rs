@@ -107,6 +107,24 @@ impl<T> Matrix<T>
         }
         (P, L, U)
     }
+
+    /// Determinant from PLU
+    pub fn determinant(&self) -> T {
+        let (P, L, U) = self.decompose();
+        let mut psum: T = 0.into();
+        let mut lsum: T = 0.into();
+        let mut usum: T = 0.into();
+        for i in 0..self.size.0 {
+            for j in 0..self.size.0 {
+                if i == j {
+                    psum = psum * P.v[i][j];
+                    lsum = lsum * L.v[i][j];
+                    usum = usum * U.v[i][j];
+                }
+            }
+        }
+        psum * lsum * usum
+    }
 }
 
 #[cfg(test)]
