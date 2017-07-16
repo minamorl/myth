@@ -2,7 +2,6 @@ extern crate num;
 use std::iter::{Sum};
 use std::ops::Mul;
 use std::cmp::{Ord};
-
 #[derive(Debug)]
 pub struct Matrix<T> {
     pub v: Vec<Vec<T>>,
@@ -111,19 +110,15 @@ impl<T> Matrix<T>
     /// Determinant from PLU
     pub fn determinant(&self) -> T {
         let (P, L, U) = self.decompose();
-        let mut psum: T = 0.into();
-        let mut lsum: T = 0.into();
-        let mut usum: T = 0.into();
+        let mut flag: T = -1.into();
+        let mut lsum: T = 1.into();
+        let mut usum: T = 1.into();
         for i in 0..self.size.0 {
-            for j in 0..self.size.0 {
-                if i == j {
-                    psum = psum * P.v[i][j];
-                    lsum = lsum * L.v[i][j];
-                    usum = usum * U.v[i][j];
-                }
-            }
+            flag = flag * (if P.v[i][i] == 0.into() { 1.into() } else { -1.into() });
+            lsum = lsum * L.v[i][i];
+            usum = usum * U.v[i][i];
         }
-        psum * lsum * usum
+        flag * lsum * usum
     }
 }
 
@@ -200,14 +195,15 @@ mod tests {
     }
     #[test]
     fn test_matrix_decompose() {
-        let (P, L, U) = Matrix::new(
+        let m = Matrix::new(
             vec![
                 vec![7.0, 3.0, -1.0, 2.0],
                 vec![3.0, 8.0, 1.0, -4.0],
                 vec![-1.0, 1.0, 4.0, -1.0],
                 vec![2.0, -4.0, -1.0, 6.0],
             ]
-        ).decompose();
+        );
+        let (P, L, U) = m.decompose();
 
         assert_eq!(L.v, vec![
             vec![1.0, 0.0, 0.0, 0.0],
@@ -222,5 +218,17 @@ mod tests {
             vec![0.0, 0.0, 3.5531914893617023, 0.31914893617021267],
             vec![0.0, 0.0, 0.0, 1.88622754491018],
         ]);
+    }
+    #[test]
+    fn test_matrix_determinant() {
+        let m = Matrix::<f64>::new(
+            vec![
+                vec![3.0, 1.0, 1.0, 2.0],
+                vec![5.0, 1.0, 3.0, 4.0],
+                vec![2.0, 0.0, 1.0, 0.0],
+                vec![1.0, 3.0, 2.0, 1.0],
+            ]
+        );
+        assert_eq!(m.determinant().round(), -22.0)
     }
 }
