@@ -8,6 +8,13 @@ pub struct Matrix<T> {
     pub size: (usize, usize),
 }
 
+#[derive(Debug)]
+pub struct LUPDecomposed<T> {
+    pub P: Matrix<T>,
+    pub L: Matrix<T>,
+    pub U: Matrix<T>,
+}
+
 impl<T> Matrix<T> 
     where T: num::Signed + Clone + Copy + Sum + Mul + PartialOrd, i32: Into<T> {
     pub fn new(v: Vec<Vec<T>>) -> Self {
@@ -91,7 +98,7 @@ impl<T> Matrix<T>
 
     }
     /// Provides a result from LU decomposition
-    pub fn decompose(&self) -> (Self, Self, Self){
+    pub fn decompose(&self) -> LUPDecomposed<T> {
         let mut L = Matrix::diag(vec![1.into(); self.size.0]);
         let mut U = Matrix::zeroes(self.size.0, self.size.0);
         let P = self.pivot();
@@ -104,19 +111,26 @@ impl<T> Matrix<T>
                 L.v[i][j] = (PA.v[i][j] - (0..j).map(|k| L.v[i][k] * U.v[k][j]).sum()) / U.v[j][j]
             }
         }
-        (P, L, U)
+        LUPDecomposed {
+            P: P,
+            L: L,
+            U: U,
+        }
     }
+}
+
+impl<T> LUPDecomposed<T> 
+    where T: num::Signed + Clone + Copy + Sum + Mul + PartialOrd, i32: Into<T>{
 
     /// Determinant from PLU
     pub fn determinant(&self) -> T {
-        let (P, L, U) = self.decompose();
         let mut flag: T = -1.into();
         let mut lsum: T = 1.into();
         let mut usum: T = 1.into();
-        for i in 0..self.size.0 {
-            flag = flag * (if P.v[i][i] == 0.into() { 1.into() } else { -1.into() });
-            lsum = lsum * L.v[i][i];
-            usum = usum * U.v[i][i];
+        for i in 0..self.P.size.0 {
+            flag = flag * (if self.P.v[i][i] == 0.into() { 1.into() } else { -1.into() });
+            lsum = lsum * self.L.v[i][i];
+            usum = usum * self.U.v[i][i];
         }
         flag * lsum * usum
     }
@@ -125,6 +139,8 @@ impl<T> Matrix<T>
 #[cfg(test)]
 mod tests {
     use matrix::Matrix;
+    use matrix::LUPDecomposed;
+
     #[test]
     fn test_matrix_size() {
         let v = Matrix::new(
@@ -203,16 +219,16 @@ mod tests {
                 vec![2.0, -4.0, -1.0, 6.0],
             ]
         );
-        let (P, L, U) = m.decompose();
+        let decomposed = m.decompose();
 
-        assert_eq!(L.v, vec![
+        assert_eq!(decomposed.L.v, vec![
             vec![1.0, 0.0, 0.0, 0.0],
             vec![0.42857142857142855, 1.0, 0.0, 0.0],
             vec![-0.14285714285714285, 0.2127659574468085, 1.0, 0.0],
             vec![0.2857142857142857, -0.7234042553191489, 0.0898203592814371, 1.0]
         ]);
 
-        assert_eq!(U.v, vec![
+        assert_eq!(decomposed.U.v, vec![
             vec![7.0, 3.0, -1.0, 2.0], 
             vec![0.0, 6.714285714285714, 1.4285714285714286, -4.857142857142857],
             vec![0.0, 0.0, 3.5531914893617023, 0.31914893617021267],
@@ -220,8 +236,8 @@ mod tests {
         ]);
     }
     #[test]
-    fn test_matrix_determinant() {
-        let m = Matrix::<f64>::new(
+    fn test_LUPDecomposed_determinant() {
+        let m = Matrix::new(
             vec![
                 vec![3.0, 1.0, 1.0, 2.0],
                 vec![5.0, 1.0, 3.0, 4.0],
@@ -229,6 +245,6 @@ mod tests {
                 vec![1.0, 3.0, 2.0, 1.0],
             ]
         );
-        assert_eq!(m.determinant().round(), -22.0)
+        assert_eq!(m.decompose().determinant().round(), -22.0)
     }
 }
