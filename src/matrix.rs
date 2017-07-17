@@ -5,7 +5,7 @@ use std::cmp::{Ord};
 #[derive(Debug)]
 pub struct Matrix<T> {
     pub v: Vec<Vec<T>>,
-    pub size: (usize, usize),
+    shape: (usize, usize),
 }
 
 #[derive(Debug)]
@@ -18,11 +18,15 @@ pub struct LUPDecomposed<T> {
 impl<T> Matrix<T> 
     where T: num::Signed + Clone + Copy + Sum + Mul + PartialOrd, i32: Into<T> {
     pub fn new(v: Vec<Vec<T>>) -> Self {
-        let size = (v.len(), v[0].len());
+        let shape = (v.len(), v[0].len());
         Self {
             v: v,
-            size: size,
+            shape: shape,
         }
+    }
+    #[inline]
+    pub fn shape(&self) -> (usize, usize) {
+        self.shape
     }
     pub fn zeroes(n: usize, m: usize) -> Self {
         Self::new(
@@ -43,35 +47,35 @@ impl<T> Matrix<T>
         )
     }
     pub fn add(&self, vec: &Self) -> Result<Self, &str> {
-        if self.size != vec.size {
+        if self.shape() != vec.shape() {
             return Err("Matrix size is wrong");
         }
-        Ok(Self::new((0..self.size.0).map(|i| {
+        Ok(Self::new((0..self.shape().0).map(|i| {
             
-            (0..self.size.1).map(|j| {
+            (0..self.shape().1).map(|j| {
                 self.v[i][j] + vec.v[i][j]
             }).collect()
 
         }).collect()))
     }
     pub fn transpose(&self) -> Self {
-        Self::new((0..self.size.1).map(|j| {
-            (0..self.size.0).map(|i| {
+        Self::new((0..self.shape().1).map(|j| {
+            (0..self.shape().0).map(|i| {
                 self.v[i][j]
             }).collect()
         }).collect())
     }
     pub fn isSquare(&self) -> bool {
-        self.size.0 == self.size.1
+        self.shape().0 == self.shape().1
     }
     pub fn mul(&self, vec: &Self) -> Result<Self, &str> {
-        if self.size.1 != vec.size.0 {
+        if self.shape().1 != vec.shape().0 {
             Err("Wrong size")
         } else { 
             Ok(Self::new(
-                (0..self.size.0).map(|i| {
-                    (0..vec.size.1).map(|j| {
-                        (0..vec.size.0).map(|k| self.v[i][k] * vec.v[k][j]).sum::<T>()
+                (0..self.shape().0).map(|i| {
+                    (0..vec.shape().1).map(|j| {
+                        (0..vec.shape().0).map(|k| self.v[i][k] * vec.v[k][j]).sum::<T>()
                     }).collect()
                 }).collect()
             ))
@@ -85,10 +89,10 @@ impl<T> Matrix<T>
         )
     }
     pub fn pivot(&self) -> Self {
-        let mut pivot = Self::diag(vec![1.into(); self.size.0]);
+        let mut pivot = Self::diag(vec![1.into(); self.shape().0]);
 
-        for j in 0..self.size.0 {
-            for i in j..self.size.0 {
+        for j in 0..self.shape().0 {
+            for i in j..self.shape().0 {
                 if self.v[i][j].abs() > self.v[j][j].abs() {
                     pivot.v.swap(i, j);
                 }
@@ -99,15 +103,15 @@ impl<T> Matrix<T>
     }
     /// Provides a result from LU decomposition
     pub fn decompose(&self) -> LUPDecomposed<T> {
-        let mut L = Matrix::diag(vec![1.into(); self.size.0]);
-        let mut U = Matrix::zeroes(self.size.0, self.size.0);
+        let mut L = Matrix::diag(vec![1.into(); self.shape().0]);
+        let mut U = Matrix::zeroes(self.shape().0, self.shape().0);
         let P = self.pivot();
         let PA = P.mul(&self).unwrap();
         for j in 0..self.v.len() {
             for i in 0..j + 1 {
                 U.v[i][j] = PA.v[i][j] - (0..i).map(|k| U.v[k][j] * L.v[i][k]).sum()
             }
-            for i in j..self.size.0 {
+            for i in j..self.shape().0 {
                 L.v[i][j] = (PA.v[i][j] - (0..j).map(|k| L.v[i][k] * U.v[k][j]).sum()) / U.v[j][j]
             }
         }
@@ -127,7 +131,7 @@ impl<T> LUPDecomposed<T>
         let mut flag: T = -1.into();
         let mut lsum: T = 1.into();
         let mut usum: T = 1.into();
-        for i in 0..self.P.size.0 {
+        for i in 0..self.P.shape().0 {
             flag = flag * (if self.P.v[i][i] == 0.into() { 1.into() } else { -1.into() });
             lsum = lsum * self.L.v[i][i];
             usum = usum * self.U.v[i][i];
@@ -148,7 +152,7 @@ mod tests {
                 vec![1, 2, 3],
                 vec![1, 2, 3],
             ]);
-        assert_eq!(v.size, (2, 3));
+        assert_eq!(v.shape(), (2, 3));
     }
     #[test]
     fn test_matrix_add() {
