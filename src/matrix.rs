@@ -33,6 +33,21 @@ impl<T> Matrix<T>
             vec![vec![0.into(); m]; n]
         )
     }
+    pub fn row(&self, n: usize) -> Self {
+        Self::new(
+            vec![self.v[n].clone()]
+        )
+    }
+    pub fn column(&self, n: usize) -> Self {
+        let mut vec = Vec::new();
+
+        for row in self.v.iter() {
+            vec.push(vec![row[n]])
+        }
+        Self::new(
+            vec
+        )
+    }
     pub fn diag(v: Vec<T>) -> Self {
         Self::new(
             (0..v.len()).map(|i| {
@@ -238,6 +253,28 @@ mod tests {
             vec![0.0, 0.0, 3.5531914893617023, 0.31914893617021267],
             vec![0.0, 0.0, 0.0, 1.88622754491018],
         ]);
+    }
+    #[test]
+    fn test_row() {
+        let m = Matrix::new(vec![
+            vec![1, 2, 3],
+            vec![1, 2, 3],
+            vec![1, 2, 3],
+        ]);
+        assert_eq!(m.row(0).v, vec![vec![1, 2, 3]])
+    }
+    #[test]
+    fn test_column() {
+        let m = Matrix::new(vec![
+            vec![1, 2, 3],
+            vec![1, 2, 3],
+            vec![1, 2, 3],
+        ]);
+        assert_eq!(m.column(0).v, vec![
+            vec![1],
+            vec![1],
+            vec![1]
+        ])
     }
     #[test]
     fn test_LUPDecomposed_determinant() {
